@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	// Close menu when a navigation link is clicked (mobile)
-	menu.querySelectorAll('a').forEach((link) => {4
+	menu.querySelectorAll('a').forEach((link) => {
 		link.addEventListener('click', () => {
 			if (menu.classList.contains('open')) {
 				menu.classList.remove('open');
@@ -81,4 +81,98 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Initial check
 		updateScrollButton();
 	}
+
+	// --- HERO STATS: auto-updating market statistics ---
+	(function initHeroStats() {
+		const stats = Array.from(document.querySelectorAll('.hero-stats .stat'));
+		if (!stats.length) return;
+
+		// Configuration per stat key
+		const cfg = {
+			marketGrowth: { value: 1.2, min: -5, max: 12, step: 0.4, format: v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%' },
+			activeUsers: { value: 1200, min: 400, max: 5000, step: 1, format: v => (v >= 1000 ? (v/1000).toFixed(1) + 'K' : Math.round(v)) },
+			successRate: { value: 74.5, min: 60, max: 97.9, step: 0.6, format: v => v.toFixed(1) + '%' }
+		};
+
+		const MIN_INTERVAL = 10000; // ms
+		const MAX_INTERVAL = 20000; // ms
+		let timers = {};
+		let paused = false;
+
+		function randBetween(a, b) { return Math.random() * (b - a) + a; }
+		function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+		function findCfgForKey(key) { return cfg[key]; }
+
+		function scheduleUpdate(key, el) {
+			if (paused) return;
+			const delay = Math.floor(randBetween(MIN_INTERVAL, MAX_INTERVAL));
+			timers[key] = setTimeout(() => doUpdate(key, el), delay);
+		}
+
+		function doUpdate(key, el) {
+			const c = findCfgForKey(key);
+			if (!c) return;
+
+			// small random fluctuation relative to range
+			let delta;
+			if (key === 'activeUsers') {
+				delta = Math.round(randBetween(-30, 60));
+			} else if (key === 'marketGrowth') {
+				delta = randBetween(-0.9, 1.2);
+			} else {
+				delta = randBetween(-0.6, 0.6);
+			}
+
+			let newVal = c.value + delta;
+			newVal = clamp(newVal, c.min, c.max);
+			// apply step rounding
+			if (c.step >= 1) newVal = Math.round(newVal);
+			else newVal = Math.round(newVal / c.step) * c.step;
+
+			c.value = newVal;
+
+			// update DOM
+			const valueEl = el.querySelector('.stat-value');
+			if (valueEl) {
+				valueEl.textContent = c.format(c.value);
+				// add highlight animation
+				el.classList.add('updated');
+				setTimeout(() => el.classList.remove('updated'), 700);
+			}
+
+			// schedule next update
+			scheduleUpdate(key, el);
+		}
+
+		// initialize and start timers
+		stats.forEach((el) => {
+			const key = el.getAttribute('data-key');
+			const c = findCfgForKey(key);
+			if (!c) return;
+			// set initial value from cfg
+			const vEl = el.querySelector('.stat-value');
+			if (vEl) vEl.textContent = c.format(c.value);
+			// start first update at a staggered time
+			scheduleUpdate(key, el);
+		});
+
+		// Pause updates when page not visible
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden) {
+				paused = true;
+				// clear timers
+				Object.values(timers).forEach(id => clearTimeout(id));
+				timers = {};
+			} else {
+				paused = false;
+				// restart schedules
+				stats.forEach(el => {
+					const key = el.getAttribute('data-key');
+					scheduleUpdate(key, el);
+				});
+			}
+		});
+
+	})();
 });
