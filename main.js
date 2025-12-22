@@ -89,9 +89,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		// Configuration per stat key
 		const cfg = {
-			marketGrowth: { value: 1.2, min: -5, max: 12, step: 0.4, format: v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%' },
+			marketGrowth: { value: 1.2, min: -5, max: 12, step: 0.5, format: v => (v >= 0 ? '+' : '') + v.toFixed(1) + '%' },
 			activeUsers: { value: 1200, min: 400, max: 5000, step: 1, format: v => (v >= 1000 ? (v/1000).toFixed(1) + 'K' : Math.round(v)) },
-			successRate: { value: 74.5, min: 60, max: 97.9, step: 0.6, format: v => v.toFixed(1) + '%' }
+			successRate: { value: 74.5, min: 60, max: 97.9, step: 0.5, format: v => v.toFixed(1) + '%' }
 		};
 
 		const MIN_INTERVAL = 10000; // ms

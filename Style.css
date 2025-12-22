@@ -93,7 +93,10 @@ body {
     .stat-value { font-size: 16px; }
 }
 
-
+.main-page{
+    background-image: url(Images/SL_052321_43220_07.jpg);
+    /* background-position: center; */
+}
 .main-page p {
     font-family: "Lexend Deca", sans-serif;
     font-weight: 200;
@@ -122,7 +125,9 @@ body {
     display: flex;
     justify-content: space-around;
     padding: 50px 80px;
-    background-color: #151729;
+    background-image: url(Images/5557528.jpg);
+    background-position: center;
+    background-size: cover;
     flex-direction: column;
 }
 .features h2 {
